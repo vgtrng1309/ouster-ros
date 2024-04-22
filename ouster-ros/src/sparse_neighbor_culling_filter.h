@@ -82,7 +82,7 @@ class SparseNeighbourCullingFilter {
         {
             for(int j = 0; j < n; j++)
             {
-                if(!((neighbors_count_mat(i, j) <= min_neighbors) && (std::abs(range_mat(i,j)) < max_range)))
+                if(!((neighbors_count_mat(i, j) <= min_neighbors) && (std::abs<long>(range_mat(i,j)) < max_range)))
                 {
                     range_mat(i,j) = 0;
                 }
