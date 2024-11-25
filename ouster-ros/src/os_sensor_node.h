@@ -187,6 +187,9 @@ class OusterSensor : public OusterSensorNodeBase {
     // TODO: add as a ros parameter
     const int max_read_imu_packet_errors = 60;
     int read_imu_packet_errors = 0;
+
+    // TODO: add custom param to track first packet timestamp
+    bool first_published_lidar_packet = true;
 };
 
 }  // namespace ouster_ros

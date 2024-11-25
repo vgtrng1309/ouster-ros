@@ -841,6 +841,29 @@ void OusterSensor::on_lidar_packet_msg(const uint8_t* raw_lidar_packet) {
     std::memcpy(lidar_packet.buf.data(), raw_lidar_packet,
                 lidar_packet.buf.size());
     lidar_packet_pub->publish(lidar_packet);
+
+    if (first_published_lidar_packet)
+    {
+        first_published_lidar_packet = false;
+        auto first_packet_receive_time = rclcpp::Clock(RCL_ROS_TIME).now();
+        auto ts_dir = get_parameter("timestamp_dir").as_string();
+        if (!is_arg_set(ts_dir)) {
+            ts_dir = "~/.ros/ouster_timestamp/";
+        }
+
+        if (!std::filesystem::exists(ts_dir)) {
+            RCLCPP_INFO_STREAM(get_logger(), "The Provided path [" << ts_dir << "]doesn't exist. Trying to create.");
+            if (std::filesystem::create_directories(ts_dir)) {
+                RCLCPP_INFO_STREAM(get_logger(), "The Provided Path was created successfully.");
+            } else {
+                RCLCPP_ERROR_STREAM(get_logger(), "Could not create the output directory: " << ts_dir << ". Terminating");
+                rclcpp::shutdown(nullptr, "Missing Permissions on the output path");
+            }
+        }
+
+        std::string ts = std::to_string(first_packet_receive_time.nanoseconds());
+        write_text_to_file(ts_dir + "/" + ts + ".txt", ts);
+    }
 }
 
 void OusterSensor::on_imu_packet_msg(const uint8_t* raw_imu_packet) {

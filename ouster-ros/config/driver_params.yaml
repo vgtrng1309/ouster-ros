@@ -16,7 +16,7 @@ ouster/os_driver:
     # lidar_mode[optional]: resolution and rate; possible values: { 512x10,
     # 512x20, 1024x10, 1024x20, 2048x10, 4096x5 }. Leave empty to remain on
     # current the lidar mode.
-    lidar_mode: '512x10'
+    lidar_mode: '512x20'
     # timestamp_mode[optional]: method used to timestamp measurements; possible
     # values:
     # - TIME_FROM_INTERNAL_OSC
@@ -87,3 +87,6 @@ ouster/os_driver:
     # - ouster_ros/sensor_point_types.h
     # - ouster_ros/common_point_types.h.
     point_type: original
+    # timestamp_dir[optional]: path to save first data packet timestamp, if left empty a file
+    # with the sensor hostname or ip will be crearted in ~/.ros/ouster_timestamp folder.
+    timestamp_dir: ''
