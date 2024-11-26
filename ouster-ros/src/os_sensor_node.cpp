@@ -840,6 +840,7 @@ void OusterSensor::on_lidar_packet_msg(const uint8_t* raw_lidar_packet) {
     // now we are focusing on optimizing the code for OusterDriver
     std::memcpy(lidar_packet.buf.data(), raw_lidar_packet,
                 lidar_packet.buf.size());
+    lidar_packet.header.stamp = get_clock()->now();
     lidar_packet_pub->publish(lidar_packet);
 
     // if (first_published_lidar_packet)

@@ -11,6 +11,7 @@
 
 #define PCL_NO_PRECOMPILE
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/time.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <ouster/client.h>
 #include <ouster/lidar_scan.h>
