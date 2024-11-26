@@ -89,4 +89,4 @@ ouster/os_driver:
     point_type: original
     # timestamp_dir[optional]: path to save first data packet timestamp, if left empty a file
     # with the sensor hostname or ip will be crearted in ~/.ros/ouster_timestamp folder.
-    timestamp_dir: ''
+    # timestamp_dir: ''
