@@ -64,12 +64,13 @@ using LidarScanProcessor = std::function<void(const ouster::LidarScan&,
                                               uint64_t, const rclcpp::Time&)>;
 
 class LidarPacketHandler {
-    using LidarPacketAccumlator = std::function<bool(const uint8_t*)>;
+    // TODO: Change current time to buffer time
+    using LidarPacketAccumlator = std::function<bool(const uint8_t*, const rclcpp::Time&)>;
 
    public:
     using HandlerOutput = ouster::LidarScan;
 
-    using HandlerType = std::function<void(const uint8_t*)>;
+    using HandlerType = std::function<void(const uint8_t*, const rclcpp::Time&)>;
 
    public:
     LidarPacketHandler(const ouster::sensor::sensor_info& info,
@@ -105,20 +106,24 @@ class LidarPacketHandler {
         };
         const sensor::packet_format& pf = sensor::get_format(info);
 
+        // TODO: Change current time to buffer time
         if (timestamp_mode == "TIME_FROM_ROS_TIME") {
             lidar_packet_accumlator =
-                LidarPacketAccumlator{[this, pf](const uint8_t* lidar_buf) {
-                    return lidar_handler_ros_time(pf, lidar_buf);
+                LidarPacketAccumlator{[this, pf](const uint8_t* lidar_buf,
+                                                 const rclcpp::Time& buf_time) {
+                    return lidar_handler_ros_time(pf, lidar_buf, buf_time);
                 }};
         } else if (timestamp_mode == "TIME_FROM_PTP_1588") {
             lidar_packet_accumlator = LidarPacketAccumlator{
-                [this, pf, ptp_utc_tai_offset](const uint8_t* lidar_buf) {
+                [this, pf, ptp_utc_tai_offset](const uint8_t* lidar_buf,
+                                               const rclcpp::Time& buf_time) {
                     return lidar_handler_sensor_time_ptp(pf, lidar_buf,
                                                          ptp_utc_tai_offset);
                 }};
         } else {
             lidar_packet_accumlator =
-                LidarPacketAccumlator{[this, pf](const uint8_t* lidar_buf) {
+                LidarPacketAccumlator{[this, pf](const uint8_t* lidar_buf,
+                                                 const rclcpp::Time& buf_time) {
                     return lidar_handler_sensor_time(pf, lidar_buf);
                 }};
         }
@@ -141,8 +146,9 @@ class LidarPacketHandler {
         const std::string& timestamp_mode, int64_t ptp_utc_tai_offset) {
         auto handler = std::make_shared<LidarPacketHandler>(
             info, handlers, timestamp_mode, ptp_utc_tai_offset);
-        return [handler](const uint8_t* lidar_buf) {
-            if (handler->lidar_packet_accumlator(lidar_buf)) {
+        // TODO: Change current time to buffer time
+        return [handler](const uint8_t* lidar_buf, const rclcpp::Time& buf_time) {
+            if (handler->lidar_packet_accumlator(lidar_buf, buf_time)) {
                 handler->ring_buffer_has_elements.notify_one();
             }
         };
@@ -310,11 +316,15 @@ class LidarPacketHandler {
     }
 
     bool lidar_handler_ros_time(const sensor::packet_format& pf,
-                                const uint8_t* lidar_buf) {
-        auto packet_receive_time = rclcpp::Clock(RCL_ROS_TIME).now();
+                                const uint8_t* lidar_buf,
+                                const rclcpp::Time& buf_time) {
+        // TODO: Change current time to buffer time                        
+        // auto packet_receive_time = rclcpp::Clock(RCL_ROS_TIME).now();
         if (!lidar_handler_ros_time_frame_ts_initialized) {
+            // lidar_handler_ros_time_frame_ts = extrapolate_frame_ts(
+            //     pf, lidar_buf, packet_receive_time);  // first point cloud time
             lidar_handler_ros_time_frame_ts = extrapolate_frame_ts(
-                pf, lidar_buf, packet_receive_time);  // first point cloud time
+                pf, lidar_buf, buf_time);  // first point cloud time
             lidar_handler_ros_time_frame_ts_initialized = true;
         }
 
@@ -331,8 +341,12 @@ class LidarPacketHandler {
         lidar_scan_estimated_ts = compute_scan_ts(lidar_scans[ring_buffer.write_head()]->timestamp());
         lidar_scan_estimated_msg_ts = lidar_handler_ros_time_frame_ts;
         // set time for next point cloud msg
-        lidar_handler_ros_time_frame_ts =
-            extrapolate_frame_ts(pf, lidar_buf, packet_receive_time);
+        // lidar_handler_ros_time_frame_ts =
+        //     extrapolate_frame_ts(pf, lidar_buf, packet_receive_time);
+
+        // TODO: Change current time to buffer time
+        lidar_handler_ros_time_frame_ts = 
+            extrapolate_frame_ts(pf, lidar_buf, buf_time);
 
         ring_buffer.write();
 

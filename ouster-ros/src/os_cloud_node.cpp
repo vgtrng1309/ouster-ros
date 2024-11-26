@@ -170,7 +170,7 @@ class OusterCloud : public OusterProcessingNodeBase {
             lidar_packet_sub = create_subscription<PacketMsg>(
                 "lidar_packets", selected_qos,
                 [this](const PacketMsg::ConstSharedPtr msg) {
-                    lidar_packet_handler(msg->buf.data());
+                    lidar_packet_handler(msg->buf.data(), msg->header.stamp);
                 });
         }
     }

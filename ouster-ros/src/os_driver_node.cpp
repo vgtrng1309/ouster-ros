@@ -190,7 +190,8 @@ class OusterDriver : public OusterSensor {
     }
 
     virtual void on_lidar_packet_msg(const uint8_t* raw_lidar_packet) override {
-        if (lidar_packet_handler) lidar_packet_handler(raw_lidar_packet);
+        if (lidar_packet_handler) lidar_packet_handler(raw_lidar_packet, 
+                                                       get_clock()->now());
     }
 
     virtual void on_imu_packet_msg(const uint8_t* raw_imu_packet) override {
